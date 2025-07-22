@@ -88,10 +88,10 @@ def main():
         # 5. Создание снимка
         print("\n[5/5] Остановка сервера и создание снимка...")
         server.power_off().wait_until_finished()
-        image_action = server.create_image(description="Golden Image for Neo4j", type="snapshot", name=SNAPSHOT_NAME)
+        image_action = server.create_image(description=SNAPSHOT_NAME, type="snapshot")
         image_action.wait_until_finished()
         image = client.images.get_by_id(image_action.image.id)
-        print(f"Снимок '{image.name}' (ID: {image.id}) успешно создан!")
+        print(f"Снимок '{image.description}' (ID: {image.id}) успешно создан!")
 
     finally:
         if server:

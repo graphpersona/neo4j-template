@@ -28,7 +28,7 @@ sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ss
 echo ">>> [4/4] Cloning a repository with templates..."
 sudo -u neo4j_admin cp /tmp/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/
 sudo -u neo4j_admin cp /tmp/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/
-rm -rf /tmp/repo_temp
+
 
 echo ">>> Preparation complete. Cleaning..."
 history -c

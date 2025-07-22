@@ -11,3 +11,4 @@ SNAPSHOT_NAME="neo4j-docker-template-v1"
 YOUR_BASE_DOMAIN="db.domain.com"
 # --- Git ---
 GIT_REPO_URL="https://github.com/graphpersona/neo4j-template.git"
+SSH_PRIVATE_KEY_PATH="path"

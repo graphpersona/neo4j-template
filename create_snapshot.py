@@ -63,7 +63,7 @@ def main():
         # 3. Запуск bootstrap-скрипта через SSH
         with open("templates/bootstrap-template.sh", "r", encoding="utf-8") as f:
             bootstrap_script_content = f.read()
-            
+        bootstrap_script_content = bootstrap_script_content.replace('\r\n', '\n')
         bootstrap_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,

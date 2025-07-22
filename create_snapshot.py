@@ -61,19 +61,12 @@ def main():
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
             
         # 3. Запуск bootstrap-скрипта через SSH
-        with open("templates/bootstrap-template.sh", "r", encoding='utf-8-sig') as f:
-            bootstrap_script_content = f.read()
-        bootstrap_script_content = bootstrap_script_content.replace('\r\n', '\n')
-        bootstrap_script_content = f"""\
-            apt-get update
-            apt-get install -y git
-            git clone {GIT_REPO_URL} /tmp/repo_temp
-            bash /tmp/repo_temp/bootstrap-template.sh
-            """
+        bootstrap_script_content = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} /tmp/repo_temp && bash /tmp/repo_temp/templates/bootstrap-template.sh"""
+        print(bootstrap_script_content)
         bootstrap_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,
-            "-o", "StrictHostKeyChecking=no",
+            #"-o", "StrictHostKeyChecking=no",
             f"root@{ip}",
             "bash", "-s"
         ]
@@ -88,7 +81,7 @@ def main():
         
         # 4. Копирование сертификатов
         print("\n[4/5] Копирование сертификатов на сервер...")
-        scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no"
+        scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no -o PasswordAuthentication=no"
         subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         

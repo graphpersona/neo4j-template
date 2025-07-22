@@ -61,7 +61,7 @@ def main():
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
         
         # 3. Создание пользователя neo4j_admin
-        create_user_command = f"""sudo adduser neo4j_admin --disabled-password --gecos '' && sudo usermod -aG sudo neo4j_admin && mkdir -p /home/neo4j_admin/.ssh && cp /root/.ssh/authorized_keys /home/neo4j_admin/.ssh/ && chown -R neo4j_admin:neo4j_admin /home/neo4j_admin/.ssh"""
+        create_user_command = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} /tmp/repo_temp && bash /tmp/repo_temp/templates/bootstrap-template.sh"""
         create_user_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,
@@ -77,13 +77,13 @@ def main():
         print(">>> Пользователь neo4j_admin создан.")
             
         # 4. Запуск bootstrap-скрипта через SSH от neo4j_admin
-        bootstrap_script_content = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} /tmp/repo_temp && bash /tmp/repo_temp/templates/bootstrap-template.sh"""
+        bootstrap_script_content = f"""git clone {GIT_REPO_URL} /repo_temp && cp /repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/ && cp /repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/"""
         print(bootstrap_script_content)
         bootstrap_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,
             #"-o", "StrictHostKeyChecking=no",
-            "-o", "PasswordAuthentication=no"
+            "-o", "PasswordAuthentication=no",
             f"neo4j_admin@{ip}",
             "bash", "-s"
         ]

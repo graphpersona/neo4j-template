@@ -1,15 +1,9 @@
 #!/bin/bash
-echo ">>> [1/4] Create a user 'neo4j_admin'..."
-adduser neo4j_admin --disabled-password --gecos ""
-usermod -aG sudo neo4j_admin
+echo ">>> [1/4] Ufw..."
 ufw allow 7473
 ufw allow 7687
 ufw allow ssh
 ufw --force enable
-
-mkdir -p /home/neo4j_admin/.ssh
-cp /root/.ssh/authorized_keys /home/neo4j_admin/.ssh/
-chown -R neo4j_admin:neo4j_admin /home/neo4j_admin/.ssh
 
 echo ">>> [2/4] Installing Docker и Git..."
 apt-get update
@@ -23,11 +17,11 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 usermod -aG docker neo4j_admin
 
 echo ">>> [3/4] Creating a folder structure..."
-sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
+mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
 
 echo ">>> [4/4] Cloning a repository with templates..."
-sudo -u neo4j_admin cp /tmp/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/
-sudo -u neo4j_admin cp /tmp/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/
+cp /tmp/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/
+cp /tmp/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/
 
 
 echo ">>> Preparation complete. Cleaning..."

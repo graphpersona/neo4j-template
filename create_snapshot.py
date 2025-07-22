@@ -59,21 +59,38 @@ def main():
                 time.sleep(10)
         else:
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
+        
+        # 3. Создание пользователя neo4j_admin
+        create_user_command = f"""sudo adduser neo4j_admin --disabled-password --gecos '' && sudo usermod -aG sudo neo4j_admin && mkdir -p /home/neo4j_admin/.ssh && cp /root/.ssh/authorized_keys /home/neo4j_admin/.ssh/ && chown -R neo4j_admin:neo4j_admin /home/neo4j_admin/.ssh"""
+        create_user_run_command = [
+            "ssh",
+            "-i", SSH_PRIVATE_KEY_PATH,
+            f"root@{ip}",
+            "bash", "-s"
+        ]
+        subprocess.run(
+            create_user_run_command, 
+            input=create_user_command, 
+            text=True,
+            check=True
+        )
+        print(">>> Пользователь neo4j_admin создан.")
             
-        # 3. Запуск bootstrap-скрипта через SSH
+        # 4. Запуск bootstrap-скрипта через SSH от neo4j_admin
         bootstrap_script_content = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} /tmp/repo_temp && bash /tmp/repo_temp/templates/bootstrap-template.sh"""
         print(bootstrap_script_content)
         bootstrap_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,
             #"-o", "StrictHostKeyChecking=no",
-            f"root@{ip}",
+            "-o", "PasswordAuthentication=no"
+            f"neo4j_admin@{ip}",
             "bash", "-s"
         ]
         
         subprocess.run(
             bootstrap_run_command,
-            input=bootstrap_script_content, # <-- Вот как правильно передавать скрипт
+            input=bootstrap_script_content, 
             text=True,
             check=True
         )
@@ -89,7 +106,6 @@ def main():
         print("\n[5/5] Остановка сервера и создание снимка...")
         server.power_off().wait_until_finished()
         image_action = server.create_image(description=SNAPSHOT_NAME, type="snapshot")
-        image_action.wait_until_finished()
         image = client.images.get_by_id(image_action.image.id)
         print(f"Снимок '{image.description}' (ID: {image.id}) успешно создан!")
 

@@ -61,7 +61,7 @@ def main():
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
         
         # 3. Создание пользователя neo4j_admin
-        create_user_command = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} /tmp/repo_temp && bash /tmp/repo_temp/templates/bootstrap-template.sh"""
+        create_user_command = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} ~/repo_temp && bash ~/repo_temp/templates/bootstrap-template.sh"""
         create_user_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,

@@ -83,13 +83,13 @@ def main():
         scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no -o PasswordAuthentication=no"
         subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
-        time.sleep(5)
+    #    time.sleep(5)
         # 5. Создание снимка
-        print("\n[5/5] Остановка сервера и создание снимка...")
-        server.power_off().wait_until_finished()
-        image_action = server.create_image(description=SNAPSHOT_NAME, type="snapshot")
-        image = client.images.get_by_id(image_action.image.id)
-        print(f"Снимок '{image.description}' (ID: {image.id}) успешно создан!")
+     #   print("\n[5/5] Остановка сервера и создание снимка...")
+     #   server.power_off().wait_until_finished()
+     #   image_action = server.create_image(description=SNAPSHOT_NAME, type="snapshot")
+     #   image = client.images.get_by_id(image_action.image.id)
+      #  print(f"Снимок '{image.description}' (ID: {image.id}) успешно создан!")
 
     finally:
         if server:

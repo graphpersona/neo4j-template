@@ -76,24 +76,6 @@ def main():
         )
         print(">>> Пользователь neo4j_admin создан.")
             
-        # 4. Запуск bootstrap-скрипта через SSH от neo4j_admin
-      #  bootstrap_script_content = f"""git clone {GIT_REPO_URL} ~/repo_temp && cp ~/repo_temp/templates/docker-compose.yml ~/neo4j_instance/ && cp ~/repo_temp/templates/neo4j.conf ~/neo4j_instance/conf/ && rm -rf ~/repo_temp"""
-      #  print(bootstrap_script_content)
-      #  bootstrap_run_command = [
-      #      "ssh",
-      #      "-i", SSH_PRIVATE_KEY_PATH,
-      #      #"-o", "StrictHostKeyChecking=no",
-      #      "-o", "PasswordAuthentication=no",
-       #     f"neo4j_admin@{ip}",
-       #     "bash", "-s"
-       # ]
-        
-       # subprocess.run(
-       #     bootstrap_run_command,
-      #      input=bootstrap_script_content, 
-       #     text=True,
-       #     check=True
-      #  )
         print(">>> Скрипт подготовки выполнен.")
         
         # 4. Копирование сертификатов
@@ -101,7 +83,7 @@ def main():
         scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no -o PasswordAuthentication=no"
         subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
-        
+        time.sleep(5)
         # 5. Создание снимка
         print("\n[5/5] Остановка сервера и создание снимка...")
         server.power_off().wait_until_finished()

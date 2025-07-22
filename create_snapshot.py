@@ -13,6 +13,7 @@ HETZNER_API_TOKEN = os.getenv("HETZNER_API_TOKEN")
 SSH_KEY_NAME = os.getenv("SSH_KEY_NAME")
 SNAPSHOT_NAME = os.getenv("SNAPSHOT_NAME")
 GIT_REPO_URL = os.getenv("GIT_REPO_URL")
+SSH_PRIVATE_KEY_PATH = os.getenv("SSH_PRIVATE_KEY_PATH") 
 client = Client(token=HETZNER_API_TOKEN)
 
 # --- SCRIPT THAT WILL BE EXECUTED ON TEMPORARY VM ---
@@ -22,13 +23,14 @@ def main():
     server = None
     try:
         print("\n[1/4] Creating a temporary server...")
+        # добавить цикл - выбор другой локации если вдруг ошибка
         response = client.servers.create(
             name="snapshot-builder",
             server_type=ServerType(name="cx22"),
-            location=Location(name="nbg1"),
+            location=Location(name="hel1"),
             image=Image(name="ubuntu-24.04"),
             ssh_keys=[client.ssh_keys.get_by_name(SSH_KEY_NAME)],
-            start_after_create=True
+            start_after_create=True,
         )
         server = response.server
         print(f"Server '{server.name}' created. IP: {server.public_net.ipv4.ip}. Waiting for bootstrap script to complete...")
@@ -37,12 +39,19 @@ def main():
 
         # 2. Ожидание доступности SSH
         print("\n[2/5] Ожидание доступности SSH на сервере...")
+        # Собираем команду SSH с явным указанием ключа и отключением паролей
+        ssh_check_command = [
+            "ssh",
+            "-i", SSH_PRIVATE_KEY_PATH, # <-- Указываем наш ключ
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "PasswordAuthentication=no", # <-- Запрещаем спрашивать пароль
+            "-o", "ConnectTimeout=10",
+            f"root@{ip}",
+            "echo 'SSH is up'"
+        ]
         for _ in range(30): # Ждем максимум 5 минут
             try:
-                subprocess.run(
-                    ["ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10", f"root@{ip}", "echo 'SSH is up'"],
-                    check=True, capture_output=True, text=True, timeout=10
-                )
+                subprocess.run(ssh_check_command, check=True, capture_output=True, text=True, timeout=15)
                 print(">>> SSH доступен.")
                 break
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
@@ -52,19 +61,29 @@ def main():
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
             
         # 3. Запуск bootstrap-скрипта через SSH
-        print(f"\n[3/5] Запуск скрипта подготовки на сервере...")
-        # Мы передаем весь скрипт в одну SSH-команду
+        with open("templates/bootstrap-template.sh", "r", encoding="utf-8") as f:
+            bootstrap_script_content = f.read()
+            
+        bootstrap_run_command = [
+            "ssh",
+            "-i", SSH_PRIVATE_KEY_PATH,
+            "-o", "StrictHostKeyChecking=no",
+            f"root@{ip}",
+            "bash -s" # Команда, которую нужно выполнить на сервере
+        ]
         subprocess.run(
-            f"ssh -o StrictHostKeyChecking=no root@{ip} 'bash -s' < templates/bootstrap-template.sh",
-            shell=True,
+            bootstrap_run_command,
+            input=bootstrap_script_content, # <-- Вот как правильно передавать скрипт
+            text=True,
             check=True
         )
         print(">>> Скрипт подготовки выполнен.")
         
         # 4. Копирование сертификатов
         print("\n[4/5] Копирование сертификатов на сервер...")
-        subprocess.run(f"scp -o StrictHostKeyChecking=no certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
-        subprocess.run(f"scp -o StrictHostKeyChecking=no certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
+        scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no"
+        subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
+        subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         
         # 5. Создание снимка
         print("\n[5/5] Остановка сервера и создание снимка...")

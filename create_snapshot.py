@@ -83,6 +83,15 @@ def main():
         scp_command_base = f"scp -i {SSH_PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no -o PasswordAuthentication=no"
         subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
+
+        change_command = f"""sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/""" 
+        subprocess.run(
+            create_user_run_command, 
+            input=change_command, 
+            text=True,
+            check=True
+        )
+    
     #    time.sleep(5)
         # 5. Создание снимка
      #   print("\n[5/5] Остановка сервера и создание снимка...")

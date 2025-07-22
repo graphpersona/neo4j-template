@@ -61,7 +61,7 @@ def main():
             raise Exception("Не удалось подключиться к серверу по SSH за 5 минут.")
             
         # 3. Запуск bootstrap-скрипта через SSH
-        with open("templates/bootstrap-template.sh", "r", encoding="utf-8") as f:
+        with open("templates/bootstrap-template.sh", "r", encoding='utf-8-sig') as f:
             bootstrap_script_content = f.read()
         bootstrap_script_content = bootstrap_script_content.replace('\r\n', '\n')
         bootstrap_run_command = [
@@ -69,7 +69,7 @@ def main():
             "-i", SSH_PRIVATE_KEY_PATH,
             "-o", "StrictHostKeyChecking=no",
             f"root@{ip}",
-            "bash -s" # Команда, которую нужно выполнить на сервере
+            "/bin/bash", "-e", "-u", "-o", "pipefail", "-s"
         ]
         subprocess.run(
             bootstrap_run_command,

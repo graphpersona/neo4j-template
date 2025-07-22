@@ -13,6 +13,7 @@ services:
       - ./conf:/conf
       - ./plugins:/plugins
       - ./import:/import
+      - ./backups:/backups
       - ./ssl_certs:/etc/ssl/neo4j:ro
     environment:
       - NEO4J_AUTH=none

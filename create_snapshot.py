@@ -64,16 +64,18 @@ def main():
         with open("templates/bootstrap-template.sh", "r", encoding='utf-8-sig') as f:
             bootstrap_script_content = f.read()
         bootstrap_script_content = bootstrap_script_content.replace('\r\n', '\n')
+        bootstrap_script_content = f"""\
+            apt-get update -y
+            apt-get install -y git
+            git clone {GIT_REPO_URL} /tmp/repo_temp
+            bash /tmp/repo_temp/bootstrap-template.sh
+            """
         bootstrap_run_command = [
             "ssh",
             "-i", SSH_PRIVATE_KEY_PATH,
             "-o", "StrictHostKeyChecking=no",
             f"root@{ip}",
-            "/bin/bash",   # явный путь к bash
-            "-e",          # выход при ошибке
-            #"-u",          # неразрешённые переменные — ошибка
-            #"-o", "pipefail",  # ловим ошибку любой части пайпа
-            "-s"           # читать сценарий из stdin
+            "bash", "-s"
         ]
         
         subprocess.run(

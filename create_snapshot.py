@@ -69,8 +69,13 @@ def main():
             "-i", SSH_PRIVATE_KEY_PATH,
             "-o", "StrictHostKeyChecking=no",
             f"root@{ip}",
-            "/bin/bash", "-e", "-u", "-o", "pipefail", "-s"
+            "/bin/bash",   # явный путь к bash
+            "-e",          # выход при ошибке
+            #"-u",          # неразрешённые переменные — ошибка
+            #"-o", "pipefail",  # ловим ошибку любой части пайпа
+            "-s"           # читать сценарий из stdin
         ]
+        
         subprocess.run(
             bootstrap_run_command,
             input=bootstrap_script_content, # <-- Вот как правильно передавать скрипт

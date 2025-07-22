@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 exec > >(tee /var/log/cloud-init-output.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 echo ">>> [1/4] Create a user 'neo4j_admin'..."

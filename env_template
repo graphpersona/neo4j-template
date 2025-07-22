@@ -1,0 +1,13 @@
+# --- Secrets ---
+HETZNER_API_TOKEN="YOUR_HETZNER_API_TOKEN"
+CLOUDFLARE_API_TOKEN="YOUR_CLOUDFLARE_API_TOKEN"
+
+# --- Cloudflare ---
+CLOUDFLARE_ZONE_ID="YOUR_CLOUDFLARE_ZONE_ID_FOR_YOUR_DOMAIN"
+# --- Project in Hetzner ---
+SSH_KEY_NAME="KEY_NAME"
+SSH_YOUR_EMAIL="email@gmail.com"
+SNAPSHOT_NAME="neo4j-docker-template-v1"
+YOUR_BASE_DOMAIN="db.domain.com"
+# --- Git ---
+GIT_REPO_URL="https://github.com/graphpersona/neo4j-template.git"

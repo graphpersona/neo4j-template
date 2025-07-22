@@ -23,7 +23,7 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 usermod -aG docker neo4j_admin
 
 echo ">>> [3/4] Creating a folder structure..."
-sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{{conf,data,logs,ssl_certs,backups,import,plugins}}
+sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
 
 echo ">>> [4/4] Cloning a repository with templates..."
 sudo -u neo4j_admin cp /tmp/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/

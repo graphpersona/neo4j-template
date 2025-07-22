@@ -77,7 +77,7 @@ def main():
         print(">>> Пользователь neo4j_admin создан.")
             
         # 4. Запуск bootstrap-скрипта через SSH от neo4j_admin
-        bootstrap_script_content = f"""git clone {GIT_REPO_URL} /home/neo4j_admin/repo_temp && cp /home/neo4j_admin/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/ && cp /home/neo4j_admin/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/"""
+        bootstrap_script_content = f"""git clone {GIT_REPO_URL} /home/neo4j_admin/repo_temp && cp /home/neo4j_admin/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/ && cp /home/neo4j_admin/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/ && rm -rf /home/neo4j_admin/repo_temp"""
         print(bootstrap_script_content)
         bootstrap_run_command = [
             "ssh",

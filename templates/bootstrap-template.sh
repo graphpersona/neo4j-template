@@ -24,3 +24,4 @@ usermod -aG docker neo4j_admin
 
 echo ">>> [3/4] Creating a folder structure..."
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
+rm -rf /tmp/repo_temp

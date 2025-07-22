@@ -41,3 +41,4 @@ chown -v neo4j_admin:neo4j_admin \
 stat -c '%n %s bytes (last mod: %y)' \
      /home/neo4j_admin/neo4j_instance/docker-compose.yml \
      /home/neo4j_admin/neo4j_instance/conf/neo4j.conf
+sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/

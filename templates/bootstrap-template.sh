@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 echo ">>> [1/4] Create a user 'neo4j_admin'..."
 adduser neo4j_admin --disabled-password --gecos ""
 usermod -aG sudo neo4j_admin
@@ -24,8 +25,11 @@ usermod -aG docker neo4j_admin
 
 echo ">>> [3/4] Creating a folder structure..."
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
+ls -l /root/repo_temp/templates/docker-compose.yml
+ls -l /root/repo_temp/templates/neo4j.conf
 cp -v /root/repo_temp/templates/docker-compose.yml /home/neo4j_admin/neo4j_instance/docker-compose.yml
 cp -v /root/repo_temp/templates/neo4j.conf /home/neo4j_admin/neo4j_instance/conf/neo4j.conf
+echo "cp exit code = $?"
 chown -v neo4j_admin:neo4j_admin \
       /home/neo4j_admin/neo4j_instance/docker-compose.yml \
       /home/neo4j_admin/neo4j_instance/conf/neo4j.conf

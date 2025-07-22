@@ -13,7 +13,7 @@ chown -R neo4j_admin:neo4j_admin /home/neo4j_admin/.ssh
 
 echo ">>> [2/4] Installing Docker и Git..."
 apt-get update
-apt-get install -y ca-certificates curl gnupg git
+apt-get install -y ca-certificates curl gnupg
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 chmod a+r /etc/apt/keyrings/docker.gpg

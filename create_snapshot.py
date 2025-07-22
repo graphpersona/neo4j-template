@@ -65,7 +65,7 @@ def main():
             bootstrap_script_content = f.read()
         bootstrap_script_content = bootstrap_script_content.replace('\r\n', '\n')
         bootstrap_script_content = f"""\
-            apt-get update -y
+            apt-get update
             apt-get install -y git
             git clone {GIT_REPO_URL} /tmp/repo_temp
             bash /tmp/repo_temp/bootstrap-template.sh

@@ -25,6 +25,7 @@ usermod -aG docker neo4j_admin
 
 echo ">>> [3/4] Creating a folder structure..."
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
+sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/data/gds_models
 ls -l /root/repo_temp/templates/docker-compose.yml
 ls -l /root/repo_temp/templates/neo4j.conf
 chmod a+r /root/repo_temp/templates/docker-compose.yml \

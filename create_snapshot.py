@@ -19,7 +19,7 @@ client = Client(token=HETZNER_API_TOKEN)
 
 # --- SCRIPT THAT WILL BE EXECUTED ON TEMPORARY VM ---
 def create_server(server_name, server_type, location, image, ssh_keys_name):
-    print("\n[1/6] Creating a temporary server Hetzner...")
+    print("\n[1/7] Creating a temporary server Hetzner...")
     try:
         response = client.servers.create(
                 name=server_name,
@@ -36,7 +36,7 @@ def create_server(server_name, server_type, location, image, ssh_keys_name):
         return False, False
 
 def wait_ssh(ip):
-    print("\n[2/6] Wait SSH on server...")
+    print("\n[2/7] Wait SSH on server...")
     # Collect SSH command with explicit key and disable password authentication
     ssh_check_command = [
         "ssh",
@@ -61,7 +61,7 @@ def wait_ssh(ip):
 
 def run_bootstrap_script(ip):
     try:
-        print("\n[3/6] Create user neo4j_admin, install and run bootstrap script, copy ssl certs...")
+        print("\n[3/7] Create user neo4j_admin, install and run bootstrap script, copy ssl certs...")
         create_user_command = f"""sudo apt-get update && sudo apt-get install -y git && git clone {GIT_REPO_URL} ~/repo_temp && bash ~/repo_temp/templates/bootstrap-template.sh"""
         create_user_run_command = ["ssh", "-i", SSH_PRIVATE_KEY_PATH, f"root@{ip}", "bash", "-s"]
         subprocess.run(create_user_run_command, input=create_user_command, text=True, check=True)
@@ -78,7 +78,7 @@ def run_bootstrap_script(ip):
 def neo4jdocker(ip):
     try:
         create_user_run_command = ["ssh", "-i", SSH_PRIVATE_KEY_PATH, f"root@{ip}", "bash", "-s"]
-        print("\n[4/6] Docker neo4j compose...")
+        print("\n[4/7] Docker neo4j compose...")
         change_command = f"""sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/ && sudo chmod o+x /home/neo4j_admin && docker compose -f /home/neo4j_admin/neo4j_instance/docker-compose.yml up -d""" 
         subprocess.run(create_user_run_command, input=change_command, text=True, check=True)
 
@@ -92,36 +92,52 @@ def neo4jdocker(ip):
         print(f"Error running or stopping neo4j docker compose: {e}")
         return False
 
-def create_snapshot(server):
+def shutdown_server(server):
     try:
-        print("\n[5/6] Stop server and create snapshot...")
-        action = client.servers.power_off(
+        print("\n[5/7] Stop server...")
+        action = client.servers.shutdown(
             server=Server(id=server.id),
         )
-        action.wait_until_finished()
-        print("Server stopped.")
-        # time.sleep(30)
+        for _ in range(30): # Wait max 5 minutes
+            if action.action.status == "success":
+                print("Server stopped.")
+                return True
+            else:
+                print(f"...server is not ready, progress: {action.action.progress}, wait 10 seconds...")
+                time.sleep(10)
+        else:
+            print("Failed to connect to server by SSH in 5 minutes.")
+            return False
+    except Exception as e:
+        print(f"Error stopping server: {e}")
+        return False
+
+def create_snapshot(server):
+    try:
+        print("\n[6/7] Create snapshot...")
         action = client.servers.create_image(
             server=Server(id=server.id),
             description=SNAPSHOT_NAME,
             type="snapshot",
         )
-        action.wait_until_finished()
-        print("Snapshot created.")
-        image = client.images.get_by_id(action.image.id)
-        #print("Waiting for snapshot ...")
-        #time.sleep(120)
-        print(f"Snapshot '{image.description}' (ID: {image.id}) created!")
-        #time.sleep(120)
-        #print(f"Snapshot '{image.description}' (ID: {image.id}) created!")
-        return True, image
+        for _ in range(30): # Wait max 5 minutes
+            if action.action.status == "success":
+                print(f"Snapshot created. ID: {action.image.id}, description: {action.image.description}")
+                image = client.images.get_by_id(action.image.id)
+                return True, image
+            else:
+                print(f"...snapshot is not ready, progress: {action.action.progress}, wait 10 seconds...")
+                time.sleep(10)
+        else:
+            print("Failed to connect to server by SSH in 5 minutes.")
+            return False, None
     except Exception as e:
         print(f"Error creating snapshot: {e}")
         return False, None
 
 def delete_server(server):
     try:
-        print(f"\n[6/6] Removing a temporary server...")
+        print(f"\n[7/7] Removing a temporary server...")
         server.delete()
         print("Temporary server removed.")
         return True
@@ -188,6 +204,13 @@ def main(zone=None, location=None):
         print(">>> Neo4j docker compose completed and stopped.")
 
         # 5. Stop server and create snapshot
+        status = shutdown_server(server)
+        if status == False:
+            print("Failed to stop server.")
+            return "NO_SERVER"
+        print("Server stopped.")
+
+        # 6. Create snapshot
         status, image = create_snapshot(server)
         if status == False:
             print("Failed to create snapshot.")

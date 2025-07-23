@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo ">>> [1/4] Create a user 'neo4j_admin'..."
+echo ">>> [1/3] Create a user 'neo4j_admin'..."
 adduser neo4j_admin --disabled-password --gecos ""
 usermod -aG sudo neo4j_admin
 ufw allow 7473
@@ -12,7 +12,7 @@ mkdir -p /home/neo4j_admin/.ssh
 cp /root/.ssh/authorized_keys /home/neo4j_admin/.ssh/
 chown -R neo4j_admin:neo4j_admin /home/neo4j_admin/.ssh
 
-echo ">>> [2/4] Installing Docker и Git..."
+echo ">>> [2/3] Installing Docker, Git, dos2unix..."
 apt-get update
 apt-get install -y ca-certificates curl gnupg dos2unix
 install -m 0755 -d /etc/apt/keyrings
@@ -23,7 +23,7 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 usermod -aG docker neo4j_admin
 
-echo ">>> [3/4] Creating a folder structure..."
+echo ">>> [3/3] Creating a folder structure..."
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/data/gds_models
 ls -l /root/repo_temp/templates/docker-compose.yml

@@ -99,14 +99,16 @@ def shutdown_server(server):
             server=Server(id=server.id),
         )
         for _ in range(30): # Wait max 5 minutes
-            if action.action.status == "success":
-                print("Server stopped.")
+            response = client.servers.get_by_id(server.id)
+            print(response.status)
+            if response.status == "off":
+                print("Server stopped")
                 return True
             else:
-                print(f"...server is not ready, progress: {action.action.progress}, wait 10 seconds...")
+                print(f"...server is not shutdown, wait 10 seconds...")
                 time.sleep(10)
         else:
-            print("Failed to connect to server by SSH in 5 minutes.")
+            print("Failed to shutdown")
             return False
     except Exception as e:
         print(f"Error stopping server: {e}")
@@ -120,16 +122,18 @@ def create_snapshot(server):
             description=SNAPSHOT_NAME,
             type="snapshot",
         )
+        image_id=action.image.id
+        print(image_id)
         for _ in range(30): # Wait max 5 minutes
-            if action.action.status == "success":
-                print(f"Snapshot created. ID: {action.image.id}, description: {action.image.description}")
-                image = client.images.get_by_id(action.image.id)
+            image = client.images.get_by_id(image_id)
+            if image.status == "available":
+                print(f"Snapshot created. ID: {image.id}, description: {image.description}")
                 return True, image
             else:
-                print(f"...snapshot is not ready, progress: {action.action.progress}, wait 10 seconds...")
+                print(f"...snapshot is not ready, wait 10 seconds...")
                 time.sleep(10)
         else:
-            print("Failed to connect to server by SSH in 5 minutes.")
+            print("Failed to create snapshot.")
             return False, None
     except Exception as e:
         print(f"Error creating snapshot: {e}")

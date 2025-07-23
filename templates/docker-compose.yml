@@ -15,7 +15,7 @@ services:
       - ./plugins:/plugins
       - ./import:/import
       - ./backups:/backups
-      - ./ssl_certs:/etc/ssl/neo4j
+      - /home/neo4j_admin/neo4j_instance/ssl_certs:/etc/ssl/neo4j
     environment:
       - NEO4J_AUTH=none
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes

@@ -7,6 +7,7 @@ from hcloud.images import Image
 from hcloud.locations import Location
 from hcloud.ssh_keys import SSHKey
 from hcloud.server_types import ServerType
+from hcloud.servers import Server
 
 load_dotenv()
 HETZNER_API_TOKEN = os.getenv("HETZNER_API_TOKEN")
@@ -94,13 +95,25 @@ def neo4jdocker(ip):
 def create_snapshot(server):
     try:
         print("\n[5/6] Stop server and create snapshot...")
-        action = server.power_off()
+        action = client.servers.power_off(
+            server=Server(id=server.id),
+        )
         action.wait_until_finished()
-        image_action = server.create_image(description=SNAPSHOT_NAME, type="snapshot")
-        image_action.wait_until_finished()
-        image = client.images.get_by_id(image_action.image.id)
-        time.sleep(120)
+        print("Server stopped.")
+        # time.sleep(30)
+        action = client.servers.create_image(
+            server=Server(id=server.id),
+            description=SNAPSHOT_NAME,
+            type="snapshot",
+        )
+        action.wait_until_finished()
+        print("Snapshot created.")
+        image = client.images.get_by_id(action.image.id)
+        #print("Waiting for snapshot ...")
+        #time.sleep(120)
         print(f"Snapshot '{image.description}' (ID: {image.id}) created!")
+        #time.sleep(120)
+        #print(f"Snapshot '{image.description}' (ID: {image.id}) created!")
         return True, image
     except Exception as e:
         print(f"Error creating snapshot: {e}")

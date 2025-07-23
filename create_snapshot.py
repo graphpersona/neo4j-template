@@ -27,7 +27,7 @@ def main():
         response = client.servers.create(
             name="snapshot-builder",
             server_type=ServerType(name="cx22"),
-            location=Location(name="hel1"),
+            location=Location(name="fsn1"),
             image=Image(name="ubuntu-24.04"),
             ssh_keys=[client.ssh_keys.get_by_name(SSH_KEY_NAME)],
             start_after_create=True,
@@ -85,7 +85,7 @@ def main():
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
 
         print("\n[5/5] Docker neo4j compose...")
-        change_command = f"""sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/ && sudo chmod o+x /home/neo4j_admin && docker compose -f /home/neo4j_admin/neo4j_instancedocker-compose.yml up -d""" 
+        change_command = f"""sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/ && sudo chmod o+x /home/neo4j_admin && docker compose -f /home/neo4j_admin/neo4j_instance/docker-compose.yml up -d""" 
         subprocess.run(
             create_user_run_command, 
             input=change_command, 

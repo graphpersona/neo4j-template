@@ -84,7 +84,7 @@ def main():
         subprocess.run(f"{scp_command_base} certs/cert.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
         subprocess.run(f"{scp_command_base} certs/key.pem neo4j_admin@{ip}:/home/neo4j_admin/neo4j_instance/ssl_certs/", shell=True, check=True)
 
-        change_command = f"""sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/ && sudo chmod o+x /home/neo4j_admin""" 
+        change_command = f"""sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && sudo dos2unix /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && sudo chown -R 7474:7474 /home/neo4j_admin/neo4j_instance/ssl_certs/ && sudo chmod o+x /home/neo4j_admin && cd neo4j_instance/ && docker compose -f docker-compose.yml up -d""" 
         subprocess.run(
             create_user_run_command, 
             input=change_command, 

@@ -8,6 +8,7 @@ from hcloud.locations import Location
 from hcloud.ssh_keys import SSHKey
 from hcloud.server_types import ServerType
 from hcloud.servers import Server
+from utils import get_location, wait_ssh
 
 load_dotenv()
 HETZNER_API_TOKEN = os.getenv("HETZNER_API_TOKEN")
@@ -34,30 +35,6 @@ def create_server(server_name, server_type, location, image, ssh_keys_name):
     except Exception as e:
         print(f"Error creating server: {e}")
         return False, False
-
-def wait_ssh(ip):
-    print("\n[2/7] Wait SSH on server...")
-    # Collect SSH command with explicit key and disable password authentication
-    ssh_check_command = [
-        "ssh",
-        "-i", SSH_PRIVATE_KEY_PATH, # <-- Our key
-        "-o", "StrictHostKeyChecking=no",
-        "-o", "PasswordAuthentication=no", # <-- Disable password authentication
-        "-o", "ConnectTimeout=10",
-        f"root@{ip}",
-        "echo 'SSH is up'"
-    ]
-    for _ in range(30): # Wait max 5 minutes
-        try:
-            subprocess.run(ssh_check_command, check=True, capture_output=True, text=True, timeout=15)
-            print(">>> SSH is up.")
-            return True
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            print("...server is not ready, wait 10 seconds...")
-            time.sleep(10)
-    else:
-        print("Failed to connect to server by SSH in 5 minutes.")
-        return False
 
 def run_bootstrap_script(ip):
     try:
@@ -154,24 +131,11 @@ def main(zone=None, location=None):
     server = None
     try:
         # 1. Create server
-        default_location = "fsn1"
-        default_zone = "europe"
-        locations = {
-            "europe": ["fsn1", "nbg1","hel1"],
-            "asia": ["sin1"],
-            "us": ["ash", "hil"],
-        }
+        zone, list_locations = get_location(zone, location)
+        server_type="cx22" if zone == "europe" else "cpx11"
         server_name="snapshot-builder"
         image="ubuntu-24.04"
         ssh_keys_name=[SSH_KEY_NAME]
-        if location is None:
-            if zone is None or zone not in locations:
-                zone = default_zone
-                location = default_location
-            else:
-                location = locations[zone][0]
-        list_locations = [location] + [loc for loc in locations[zone] if loc != location]
-        server_type="cx22" if zone == "europe" else "cpx11"
         for location in list_locations:
             server, status = create_server(server_name, server_type, location, image, ssh_keys_name)
             if status == True:

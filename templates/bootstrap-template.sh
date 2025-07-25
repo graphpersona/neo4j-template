@@ -25,10 +25,7 @@ usermod -aG docker neo4j_admin
 
 echo ">>> Install certbot..."
 apt-get update
-apt install -y software-properties-common
-add-apt-repository -y ppa:certbot/certbot
-apt update
-apt install -y certbot python3-certbot-dns-cloudflare
+apt-get install -y certbot python3-certbot-dns-cloudflare
 certbot --version
 
 echo ">>> [3/3] Creating a folder structure..."

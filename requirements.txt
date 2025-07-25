@@ -1,0 +1,10 @@
+# Neo4j Template Dependencies
+
+# Hetzner Cloud API client
+hcloud>=1.33.0
+
+# HTTP requests for Cloudflare API
+requests>=2.31.0
+
+# Environment variables management
+python-dotenv>=1.0.0 

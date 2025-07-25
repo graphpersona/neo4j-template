@@ -25,7 +25,7 @@ SSH_PRIVATE_KEY_PATH = os.getenv("SSH_PRIVATE_KEY_PATH")
 client = Client(token=HETZNER_API_TOKEN)
 
 def create_server(server_name, server_type, location, snapshot, ssh_keys_name):
-    print(f"\n[1/5] Создание сервера '{server_name}' из снимка...")
+    print(f"\n[1/5] Server '{server_name}' from snapshot...")
     try:
         response = client.servers.create(
                 name=server_name,
@@ -42,14 +42,14 @@ def create_server(server_name, server_type, location, snapshot, ssh_keys_name):
         return False, False
 
 def create_cloudflare_dns_record(fqdn, ip_address):
-    print(f"\n[2/5] Создание DNS-записи...")
+    print(f"\n[2/5] Create DNS record...")
     headers = {"Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}", "Content-Type": "application/json"}
     url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records"
     data = {"type": "A", "name": fqdn, "content": ip_address, "ttl": 1, "proxied": False}
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
-        print(f"DNS A-запись для '{fqdn}' -> {ip_address} создана.")
+        print(f"DNS A-record for '{fqdn}' -> {ip_address} created.")
         return True
     except Exception as e:
         print(f"Error creating DNS record: {e}")
@@ -58,7 +58,7 @@ def create_cloudflare_dns_record(fqdn, ip_address):
 
     
 def run_neo4jdocker(ip):
-    print(f"\n[3/4] Запуск neo4j docker compose...")
+    print(f"\n[3/4] Run neo4j docker compose...")
     try:
         run_command = ["ssh", "-i", SSH_PRIVATE_KEY_PATH, f"neo4j_admin@{ip}", "bash", "-s"]
         start_command = f"""docker start neo4j_user""" 
@@ -72,9 +72,9 @@ def provision_neo4j_for_client(SNAPSHOT_ID=304291995, zone=None, location=None):
     # Ищем наш снимок по имени
     snapshot = client.images.get_by_id(SNAPSHOT_ID)
     if not snapshot:
-        raise Exception(f"Снимок '{os.getenv('SNAPSHOT_NAME')}' не найден!")
+        raise Exception(f"Snapshot '{os.getenv('SNAPSHOT_NAME')}' not found!")
 
-    # 1. Создание VM из снимка
+    # 1. Create VM from snapshot
     zone, list_locations = get_location(zone, location)
     server_type="cx22" if zone == "europe" else "cpx11"
     subdomain = f"inst-{''.join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(12))}"
@@ -93,7 +93,7 @@ def provision_neo4j_for_client(SNAPSHOT_ID=304291995, zone=None, location=None):
     ip = server.public_net.ipv4.ip
     print(f"Server '{server.name}' created. IP: {ip}.")
 
-    # 2. Создание A-записи в DNS
+    # 2. Create A-record in DNS
     status = create_cloudflare_dns_record(server_name, ip)
     if status == False:
         print("Failed to create DNS record.")
@@ -114,23 +114,23 @@ def provision_neo4j_for_client(SNAPSHOT_ID=304291995, zone=None, location=None):
         return "NO_SERVER"
     print(">>> SSL certificate created.")
 
-    # 5. Запуск neo4j docker compose
+    # 5. Run neo4j docker compose
     run_neo4jdocker(ip)
 
-    # 6. Возвращаем результат немедленно. Проверку готовности можно сделать отдельным API-вызовом.
-    print(f"\n[4/4] Развертывание запущено. Возвращаем данные пользователю.")
+    # 6. Return result immediately. The readiness check can be done separately.
+    print(f"\n[4/4] Provisioning completed. Return data to user.")
     return {
         "status": "provisioning",
         "fqdn": server_name,
         "browser_url": f"https://{server_name}",
         "connect_uri": f"neo4j+s://{server_name}:7687",
         "user": "neo4j",
-        "initial_password_info": "При первом входе пароль не требуется. Система попросит вас создать свой новый пароль."
+        "initial_password_info": "At first login, the password is not required. The system will ask you to create a new password."
     }
 
 if __name__ == '__main__':
-    # Пример вызова функции
-    # Это будет вызываться из твоего FastAPI/Flask эндпоинта
-    result = provision_neo4j_for_client(SNAPSHOT_ID=304704763)
-    print("\n--- РЕЗУЛЬТАТ ---")
+    # Example of calling the function
+    # This will be called from your FastAPI/Flask endpoint
+    result = provision_neo4j_for_client(SNAPSHOT_ID=304712799)
+    print("\n--- RESULT ---")
     print(result)

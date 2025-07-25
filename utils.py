@@ -66,21 +66,21 @@ def get_ssl_certificate(fqdn, ip):
     try:
         print("\n Get SSL certificate...")
         create_user_run_command = ["ssh", "-i", SSH_PRIVATE_KEY_PATH, f"root@{ip}", "bash", "-s"]
-        ssh_command = f"""export SUBDOMAIN="{fqdn}" && export EMAIL="{SSL_EMAIL}" """
-        subprocess.run(create_user_run_command, input=ssh_command, text=True, check=True)
-        ssh_command = """certbot certonly --non-interactive \
+        #ssh_command = f"""export SUBDOMAIN="{fqdn}" && export EMAIL="{SSL_EMAIL}" """
+        #subprocess.run(create_user_run_command, input=ssh_command, text=True, check=True)
+        ssh_command = f"""certbot certonly --non-interactive \
             --dns-cloudflare --dns-cloudflare-credentials /root/cf.ini \
                 --dns-cloudflare-propagation-seconds 30 \
-            --agree-tos -m "$EMAIL" \
+            --agree-tos -m "{SSL_EMAIL}" \
             --key-type ecdsa \
             --cert-name neo4j \
-            -d "$SUBDOMAIN" """
+            -d "{fqdn}" """
         subprocess.run(create_user_run_command, input=ssh_command, text=True, check=True)
-        ssh_command = """cp -f /etc/letsencrypt/live/neo4j/fullchain.pem \
-                /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem
-            cp -f /etc/letsencrypt/live/neo4j/privkey.pem \
-                /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem
-            chmod 600 /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem """
+        ssh_command = (
+            "cp -f /etc/letsencrypt/live/neo4j/fullchain.pem /home/neo4j_admin/neo4j_instance/ssl_certs/cert.pem && "
+            "cp -f /etc/letsencrypt/live/neo4j/privkey.pem /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem && "
+            "chmod 600 /home/neo4j_admin/neo4j_instance/ssl_certs/key.pem"
+        )
         subprocess.run(create_user_run_command, input=ssh_command, text=True, check=True)
         print(">>> SSL certificate completed.")
         return True

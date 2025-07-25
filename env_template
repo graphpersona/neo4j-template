@@ -7,6 +7,7 @@ CLOUDFLARE_ZONE_ID="YOUR_CLOUDFLARE_ZONE_ID_FOR_YOUR_DOMAIN"
 # --- Project in Hetzner ---
 SSH_KEY_NAME="KEY_NAME"
 SSH_YOUR_EMAIL="email@gmail.com"
+SSL_EMAIL="email@gmail.com"
 SNAPSHOT_NAME="neo4j-docker-template-v1"
 YOUR_BASE_DOMAIN="db.domain.com"
 # --- Git ---

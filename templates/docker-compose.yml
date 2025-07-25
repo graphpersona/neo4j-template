@@ -6,7 +6,7 @@ services:
     hostname: neo4j.server
     restart: unless-stopped
     ports:
-      - "7473:7473"
+      - "443:7473"
       - "7687:7687"
     volumes:
       - ./data:/data

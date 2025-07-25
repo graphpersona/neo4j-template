@@ -5,6 +5,8 @@ adduser neo4j_admin --disabled-password --gecos ""
 usermod -aG sudo neo4j_admin
 ufw allow 7473
 ufw allow 7687
+ufw allow 443
+ufw allow 443/tcp
 ufw allow ssh
 ufw --force enable
 

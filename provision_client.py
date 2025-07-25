@@ -131,6 +131,6 @@ def provision_neo4j_for_client(SNAPSHOT_ID=304291995, zone=None, location=None):
 if __name__ == '__main__':
     # Пример вызова функции
     # Это будет вызываться из твоего FastAPI/Flask эндпоинта
-    result = provision_neo4j_for_client(SNAPSHOT_ID=304291995)
+    result = provision_neo4j_for_client(SNAPSHOT_ID=304704763)
     print("\n--- РЕЗУЛЬТАТ ---")
     print(result)

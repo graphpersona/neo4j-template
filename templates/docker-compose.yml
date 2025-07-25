@@ -17,12 +17,11 @@ services:
       - ./backups:/backups
       - /home/neo4j_admin/neo4j_instance/ssl_certs:/etc/ssl/neo4j
     environment:
-      - NEO4J_AUTH=none
+      - NEO4J_AUTH=neo4j/ps123456789
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
       - NEO4J_PLUGINS=["apoc","graph-data-science"]
       - NEO4J_apoc_uuid_enabled=true
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
-      - NEO4J_dbms_security_procedures_allowlist=gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
       - NEO4J_server_https_enabled=true
       - NEO4J_dbms_ssl_policy_https_enabled=true
       - NEO4J_dbms_ssl_policy_https_base__directory=/etc/ssl/neo4j

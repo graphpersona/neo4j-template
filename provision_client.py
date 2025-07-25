@@ -10,7 +10,7 @@ from hcloud.server_types import ServerType
 from hcloud.locations import Location
 import secrets
 import string
-from utils import get_location, wait_ssh
+from utils import get_location, wait_ssh, get_ssl_certificate
 
 load_dotenv()
 
@@ -24,25 +24,6 @@ SSH_PRIVATE_KEY_PATH = os.getenv("SSH_PRIVATE_KEY_PATH")
 
 client = Client(token=HETZNER_API_TOKEN)
 
-# --- СКРИПТ ДЛЯ ЗАПУСКА НА КЛИЕНТСКОЙ VM ---
-BOOTSTRAP_INSTANCE_SCRIPT = """
-#!/bin/bash
-set -euo pipefail
-exec > >(tee /var/log/cloud-init-output.log|logger -t user-data -s 2>/dev/console) 2>&1
-
-echo ">>> [1/2] Запуск сервера Neo4j..."
-cd /home/neo4j_admin/neo4j_instance
-sudo chown -R 7474:7474 ./ssl_certs
-docker compose -f docker-compose.yml up -d
-
-echo ">>> [2/2] Настройка файрвола..."
-ufw allow 7473
-ufw allow 7687
-ufw allow ssh
-ufw --force enable
-
-echo "SUCCESS" > /home/neo4j_admin/provision_done
-"""
 def create_server(server_name, server_type, location, snapshot, ssh_keys_name):
     print(f"\n[1/5] Создание сервера '{server_name}' из снимка...")
     try:
@@ -64,7 +45,7 @@ def create_cloudflare_dns_record(fqdn, ip_address):
     print(f"\n[2/5] Создание DNS-записи...")
     headers = {"Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}", "Content-Type": "application/json"}
     url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records"
-    data = {"type": "A", "name": fqdn, "content": ip_address, "ttl": 1, "proxied": True}
+    data = {"type": "A", "name": fqdn, "content": ip_address, "ttl": 1, "proxied": False}
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
@@ -126,15 +107,22 @@ def provision_neo4j_for_client(SNAPSHOT_ID=304291995, zone=None, location=None):
         return "NO_SERVER"
     print(">>> SSH is up.")
 
-    # 4. Запуск neo4j docker compose
+    # 4. Get SSL certificate
+    status = get_ssl_certificate(server_name, ip)
+    if status == False:
+        print("Failed to get SSL certificate.")
+        return "NO_SERVER"
+    print(">>> SSL certificate created.")
+
+    # 5. Запуск neo4j docker compose
     run_neo4jdocker(ip)
 
-    # 5. Возвращаем результат немедленно. Проверку готовности можно сделать отдельным API-вызовом.
+    # 6. Возвращаем результат немедленно. Проверку готовности можно сделать отдельным API-вызовом.
     print(f"\n[4/4] Развертывание запущено. Возвращаем данные пользователю.")
     return {
         "status": "provisioning",
         "fqdn": server_name,
-        "browser_url": f"https://{server_name}:7473",
+        "browser_url": f"https://{server_name}",
         "connect_uri": f"neo4j+s://{server_name}:7687",
         "user": "neo4j",
         "initial_password_info": "При первом входе пароль не требуется. Система попросит вас создать свой новый пароль."

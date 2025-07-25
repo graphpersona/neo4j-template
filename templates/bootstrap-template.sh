@@ -23,6 +23,14 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 usermod -aG docker neo4j_admin
 
+echo ">>> Install certbot..."
+apt-get update
+apt install -y software-properties-common
+add-apt-repository -y ppa:certbot/certbot
+apt update
+apt install -y certbot python3-certbot-dns-cloudflare
+certbot --version
+
 echo ">>> [3/3] Creating a folder structure..."
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/{conf,data,logs,ssl_certs,backups,import,plugins}
 sudo -u neo4j_admin mkdir -p /home/neo4j_admin/neo4j_instance/data/gds_models

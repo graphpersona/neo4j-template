@@ -8,7 +8,7 @@ from hcloud.locations import Location
 from hcloud.ssh_keys import SSHKey
 from hcloud.server_types import ServerType
 from hcloud.servers import Server
-from utils import get_location, wait_ssh
+from utils import get_location, wait_ssh, dns_cloudflare_api
 
 load_dotenv()
 HETZNER_API_TOKEN = os.getenv("HETZNER_API_TOKEN")
@@ -163,6 +163,13 @@ def main(zone=None, location=None):
             print("Failed to run bootstrap script.")
             return "NO_SERVER"
         print(">>> Bootstrap script completed.")
+
+        # 3.1. Run dns_cloudflare_api
+        status = dns_cloudflare_api(ip)
+        if status == False:
+            print("Failed to run dns_cloudflare_api.")
+            return "NO_SERVER"
+        print(">>> dns_cloudflare_api completed.")
 
         # 4. Docker neo4j compose and first start
         status = neo4jdocker(ip)
